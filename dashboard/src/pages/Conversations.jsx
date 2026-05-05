@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, User, Bot, Shield, Trash2, MessageSquare } from 'lucide-react';
-import { io } from 'socket.io-client';
+import { createSocket } from '../socket';
 import api from '../api';
 
 function Conversations() {
@@ -15,7 +15,7 @@ function Conversations() {
   useEffect(() => {
     fetchConversations();
 
-    socketRef.current = io('http://localhost:3001');
+    socketRef.current = createSocket();
     socketRef.current.on('message:new', (msg) => {
       // Update conversation list
       setConversations(prev => {

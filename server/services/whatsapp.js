@@ -11,12 +11,18 @@ let connectionStatus = 'disconnected';
 function initialize(socketIo) {
   io = socketIo;
 
+  const puppeteerOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+  };
+
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  }
+
   client = new Client({
     authStrategy: new LocalAuth(),
-    puppeteer: {
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
+    puppeteer: puppeteerOptions
   });
 
   client.on('qr', async (qr) => {

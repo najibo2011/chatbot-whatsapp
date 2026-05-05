@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, QrCode, RefreshCw, LogOut } from 'lucide-react';
-import { io } from 'socket.io-client';
+import { createSocket } from '../socket';
 import api from '../api';
 
 function Connection() {
@@ -11,7 +11,7 @@ function Connection() {
   useEffect(() => {
     fetchStatus();
 
-    const socket = io('http://localhost:3001');
+    const socket = createSocket();
 
     socket.on('whatsapp:status', (newStatus) => {
       setStatus(newStatus);
