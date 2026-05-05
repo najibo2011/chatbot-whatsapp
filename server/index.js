@@ -53,13 +53,26 @@ io.on('connection', (socket) => {
 // Make io accessible to routes
 app.set('io', io);
 
-// Initialize database
-db.initialize();
-
-// Initialize WhatsApp
-whatsappService.initialize(io);
+// Ensure JWT_SECRET exists
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'default-secret-change-me';
+  console.warn('⚠️  JWT_SECRET non défini, utilisation d\'un secret par défaut');
+}
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+
+try {
+  // Initialize database
+  db.initialize();
+  console.log('✅ Base de données initialisée');
+
+  // Initialize WhatsApp
+  whatsappService.initialize(io);
+  console.log('✅ Service WhatsApp lancé');
+} catch (error) {
+  console.error('❌ Erreur initialisation:', error.message);
+}
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
