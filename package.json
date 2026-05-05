@@ -1,0 +1,29 @@
+{
+  "name": "chatbot-whatsapp",
+  "version": "1.0.0",
+  "description": "WhatsApp Chatbot with AI and Admin Dashboard",
+  "main": "server/index.js",
+  "scripts": {
+    "dev:server": "nodemon server/index.js",
+    "dev:client": "cd dashboard && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "start": "node server/index.js",
+    "setup": "npm install && cd dashboard && npm install"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^4.28.0",
+    "qrcode": "^1.5.3",
+    "socket.io": "^4.7.4",
+    "whatsapp-web.js": "^1.23.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.3"
+  }
+}

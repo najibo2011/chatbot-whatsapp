@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.db
+.wwebjs_auth/
+.wwebjs_cache/
+dashboard/node_modules/
+dashboard/dist/
