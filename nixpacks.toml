@@ -8,5 +8,5 @@ cmds = ["npm install", "cd dashboard && npm install && npm run build"]
 cmd = "node server/index.js"
 
 [variables]
-PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium"
+PUPPETEER_EXECUTABLE_PATH = "/root/.nix-profile/bin/chromium"
 NODE_ENV = "production"

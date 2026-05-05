@@ -13,11 +13,27 @@ function initialize(socketIo) {
 
   const puppeteerOptions = {
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
   };
 
+  // Find Chromium executable
   if (process.env.PUPPETEER_EXECUTABLE_PATH) {
     puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  } else if (process.env.NODE_ENV === 'production') {
+    // Try common Nix paths
+    const fs = require('fs');
+    const possiblePaths = [
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser',
+      '/app/.nix-profile/bin/chromium'
+    ];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        puppeteerOptions.executablePath = p;
+        console.log('Chromium trouvé à:', p);
+        break;
+      }
+    }
   }
 
   client = new Client({
@@ -54,7 +70,11 @@ function initialize(socketIo) {
     }
   });
 
-  client.initialize();
+  client.initialize().catch(err => {
+    console.error('❌ Erreur initialisation WhatsApp:', err.message);
+    connectionStatus = 'error';
+    io.emit('whatsapp:status', connectionStatus);
+  });
 }
 
 async function handleIncomingMessage(message) {
