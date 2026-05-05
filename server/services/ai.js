@@ -23,12 +23,20 @@ function getSettings() {
 async function generateResponse(userMessage, conversationHistory = []) {
   try {
     const settings = getSettings();
+    console.log('🤖 IA settings:', { ai_enabled: settings.ai_enabled, ai_model: settings.ai_model, auto_reply: settings.auto_reply });
 
     if (settings.ai_enabled !== 'true') {
+      console.log('⏭️ IA désactivée, pas de réponse');
+      return null;
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY non définie');
       return null;
     }
 
     const client = getClient();
+    const model = settings.ai_model || 'gpt-4o-mini';
 
     const messages = [
       { role: 'system', content: settings.ai_system_prompt || 'Tu es un assistant utile.' }
@@ -45,16 +53,20 @@ async function generateResponse(userMessage, conversationHistory = []) {
     // Add current message
     messages.push({ role: 'user', content: userMessage });
 
+    console.log(`🤖 Envoi à OpenAI (${model}), ${messages.length} messages`);
+
     const completion = await client.chat.completions.create({
-      model: settings.ai_model || 'gpt-3.5-turbo',
+      model,
       messages,
       max_tokens: parseInt(settings.ai_max_tokens) || 500,
       temperature: 0.7
     });
 
-    return completion.choices[0]?.message?.content || null;
+    const response = completion.choices[0]?.message?.content || null;
+    console.log('🤖 Réponse IA:', response ? response.substring(0, 100) + '...' : 'null');
+    return response;
   } catch (error) {
-    console.error('Erreur OpenAI:', error.message);
+    console.error('❌ Erreur OpenAI:', error.message);
     return null;
   }
 }

@@ -95,6 +95,8 @@ function initialize(socketIo) {
 async function handleIncomingMessage(message) {
   if (message.from === 'status@broadcast') return;
 
+  console.log('📩 Message reçu de:', message.from, '| Contenu:', message.body?.substring(0, 50));
+
   const db = getDb();
   const phoneNumber = message.from.replace('@c.us', '');
   const contactName = message._data.notifyName || phoneNumber;
@@ -164,12 +166,16 @@ async function handleIncomingMessage(message) {
 }
 
 async function sendMessage(phoneNumber, content) {
+  console.log('📤 Envoi message à:', phoneNumber, '| Status:', connectionStatus);
+
   if (!client || connectionStatus !== 'connected') {
     throw new Error('WhatsApp non connecté');
   }
 
   const chatId = phoneNumber.includes('@c.us') ? phoneNumber : `${phoneNumber}@c.us`;
+  console.log('📤 ChatId:', chatId);
   await client.sendMessage(chatId, content);
+  console.log('✅ Message envoyé avec succès');
 }
 
 function getStatus() {

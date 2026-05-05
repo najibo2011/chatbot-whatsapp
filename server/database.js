@@ -66,7 +66,7 @@ function initialize() {
   // Default settings
   const defaultSettings = {
     ai_enabled: 'true',
-    ai_model: process.env.AI_MODEL || 'gpt-3.5-turbo',
+    ai_model: process.env.AI_MODEL || 'gpt-4o-mini',
     ai_system_prompt: process.env.AI_SYSTEM_PROMPT || 'Tu es un assistant utile et amical. Réponds de manière concise et professionnelle.',
     ai_max_tokens: process.env.AI_MAX_TOKENS || '500',
     bot_name: 'WhatsApp Bot',
@@ -77,6 +77,13 @@ function initialize() {
   const insertSetting = database.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
   for (const [key, value] of Object.entries(defaultSettings)) {
     insertSetting.run(key, value);
+  }
+
+  // Migrate deprecated model
+  const currentModel = database.prepare("SELECT value FROM settings WHERE key = 'ai_model'").get();
+  if (currentModel?.value === 'gpt-3.5-turbo') {
+    database.prepare("UPDATE settings SET value = 'gpt-4o-mini' WHERE key = 'ai_model'").run();
+    console.log('✅ Modèle IA migré de gpt-3.5-turbo vers gpt-4o-mini');
   }
 
   console.log('✅ Base de données initialisée');
