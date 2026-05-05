@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_18", "npm", "chromium", "nss", "freetype", "harfbuzz"]
+nixPkgs = ["nodejs_18", "chromium", "nss", "freetype", "harfbuzz"]
 
 [phases.build]
 cmds = ["npm install", "cd dashboard && npm install && npm run build"]
