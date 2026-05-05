@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["chromium", "nss", "freetype", "harfbuzz", "ca-certificates", "ttf-freefont"]
+nixPkgs = ["chromium", "nss", "freetype", "harfbuzz", "cacert"]
 
 [phases.build]
 cmds = ["npm install", "cd dashboard && npm install && npm run build"]
@@ -8,5 +8,5 @@ cmds = ["npm install", "cd dashboard && npm install && npm run build"]
 cmd = "node server/index.js"
 
 [variables]
-PUPPETEER_EXECUTABLE_PATH = "/nix/store/chromium/bin/chromium"
+PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium"
 NODE_ENV = "production"
