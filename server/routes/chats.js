@@ -91,4 +91,14 @@ router.post('/whatsapp/logout', authMiddleware, async (req, res) => {
   }
 });
 
+// WhatsApp reconnect
+router.post('/whatsapp/reconnect', authMiddleware, async (req, res) => {
+  try {
+    await whatsappService.reconnect();
+    res.json({ success: true, message: 'Reconnexion en cours...' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

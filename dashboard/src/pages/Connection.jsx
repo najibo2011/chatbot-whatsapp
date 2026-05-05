@@ -49,6 +49,16 @@ function Connection() {
     }
   };
 
+  const handleReconnect = async () => {
+    try {
+      setStatus('connecting');
+      await api.post('/chats/whatsapp/reconnect');
+    } catch (err) {
+      console.error(err);
+      setStatus('disconnected');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -128,21 +138,41 @@ function Connection() {
           </div>
         )}
 
+        {/* Connecting state */}
+        {status === 'connecting' && (
+          <div className="text-center py-8">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <RefreshCw className="w-10 h-10 text-yellow-500 animate-spin" />
+            </div>
+            <p className="text-lg font-medium text-gray-900">Connexion en cours...</p>
+            <p className="text-gray-500 mt-1">Le QR code va apparaître dans quelques secondes</p>
+          </div>
+        )}
+
         {/* Disconnected state */}
-        {status === 'disconnected' && (
+        {(status === 'disconnected' || status === 'error') && (
           <div className="text-center py-8">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <QrCode className="w-10 h-10 text-gray-400" />
             </div>
-            <p className="text-lg font-medium text-gray-900">En attente de connexion</p>
-            <p className="text-gray-500 mt-1">Le QR code apparaîtra automatiquement...</p>
-            <button
-              onClick={fetchStatus}
-              className="mt-4 flex items-center gap-2 mx-auto px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Rafraîchir
-            </button>
+            <p className="text-lg font-medium text-gray-900">WhatsApp déconnecté</p>
+            <p className="text-gray-500 mt-1">Cliquez sur Reconnecter pour scanner un nouveau QR code</p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button
+                onClick={handleReconnect}
+                className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition font-medium"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reconnecter
+              </button>
+              <button
+                onClick={fetchStatus}
+                className="flex items-center gap-2 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Rafraîchir
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -8,37 +8,36 @@ let io;
 let qrCodeData = null;
 let connectionStatus = 'disconnected';
 
-function initialize(socketIo) {
-  io = socketIo;
-
-  const puppeteerOptions = {
+function getPuppeteerOptions() {
+  const opts = {
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
   };
 
-  // Find Chromium executable
   if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-    puppeteerOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    opts.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
   } else if (process.env.NODE_ENV === 'production') {
-    // Try common Nix paths
     const fs = require('fs');
     const possiblePaths = [
+      '/root/.nix-profile/bin/chromium',
       '/usr/bin/chromium',
-      '/usr/bin/chromium-browser',
-      '/app/.nix-profile/bin/chromium'
+      '/usr/bin/chromium-browser'
     ];
     for (const p of possiblePaths) {
       if (fs.existsSync(p)) {
-        puppeteerOptions.executablePath = p;
+        opts.executablePath = p;
         console.log('Chromium trouvé à:', p);
         break;
       }
     }
   }
+  return opts;
+}
 
+function createClient() {
   client = new Client({
     authStrategy: new LocalAuth(),
-    puppeteer: puppeteerOptions
+    puppeteer: getPuppeteerOptions()
   });
 
   client.on('qr', async (qr) => {
@@ -56,9 +55,20 @@ function initialize(socketIo) {
     io.emit('whatsapp:status', connectionStatus);
   });
 
+  client.on('authenticated', () => {
+    console.log('🔐 WhatsApp authentifié');
+  });
+
+  client.on('auth_failure', (msg) => {
+    console.error('❌ Échec auth WhatsApp:', msg);
+    connectionStatus = 'disconnected';
+    io.emit('whatsapp:status', connectionStatus);
+  });
+
   client.on('disconnected', (reason) => {
     console.log('❌ WhatsApp déconnecté:', reason);
     connectionStatus = 'disconnected';
+    qrCodeData = null;
     io.emit('whatsapp:status', connectionStatus);
   });
 
@@ -75,6 +85,11 @@ function initialize(socketIo) {
     connectionStatus = 'error';
     io.emit('whatsapp:status', connectionStatus);
   });
+}
+
+function initialize(socketIo) {
+  io = socketIo;
+  createClient();
 }
 
 async function handleIncomingMessage(message) {
@@ -167,10 +182,36 @@ function getQrCode() {
 
 async function logout() {
   if (client) {
-    await client.logout();
+    try {
+      await client.logout();
+    } catch (err) {
+      console.error('Erreur logout:', err.message);
+    }
+    try {
+      await client.destroy();
+    } catch (err) {
+      console.error('Erreur destroy:', err.message);
+    }
+    client = null;
     connectionStatus = 'disconnected';
+    qrCodeData = null;
     io.emit('whatsapp:status', connectionStatus);
   }
 }
 
-module.exports = { initialize, sendMessage, getStatus, getQrCode, logout };
+async function reconnect() {
+  if (client) {
+    try {
+      await client.destroy();
+    } catch (err) {
+      console.error('Erreur destroy lors reconnexion:', err.message);
+    }
+    client = null;
+  }
+  connectionStatus = 'disconnected';
+  qrCodeData = null;
+  io.emit('whatsapp:status', connectionStatus);
+  createClient();
+}
+
+module.exports = { initialize, sendMessage, getStatus, getQrCode, logout, reconnect };
